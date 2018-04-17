@@ -729,6 +729,18 @@ HerderSCPDriver::acceptedCommit(uint64_t slotIndex, SCPBallot const& ballot)
     mSCPMetrics.mAcceptedCommit.Mark();
 }
 
+optional<VirtualClock::time_point>
+HerderSCPDriver::getPrepareStart(uint64_t slotIndex)
+{
+    optional<VirtualClock::time_point> res;
+    auto it = mSCPExecutionTimes.find(slotIndex);
+    if (it != mSCPExecutionTimes.end())
+    {
+        res = it->second.mPrepareStart;
+    }
+    return res;
+}
+
 void
 HerderSCPDriver::recordSCPEvent(uint64_t slotIndex, bool isNomination)
 {
@@ -797,7 +809,7 @@ HerderSCPDriver::recordSCPExecutionMetrics(uint64_t slotIndex)
 
     // Clean up timings map
     auto it = mSCPExecutionTimes.begin();
-    while (it != mSCPExecutionTimes.end() && it->first <= slotIndex)
+    while (it != mSCPExecutionTimes.end() && it->first < slotIndex)
     {
         it = mSCPExecutionTimes.erase(it);
     }
